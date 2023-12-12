@@ -8,5 +8,7 @@
         (system: gen nixpkgs.legacyPackages.${system});
     in {
       packages = forAllSystems (pkgs: { default = pkgs.callPackage ./. { }; });
+
+      darwinModules = import ./module.nix;
     };
 }
