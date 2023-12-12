@@ -9,6 +9,6 @@
     in {
       packages = forAllSystems (pkgs: { default = pkgs.callPackage ./. { }; });
 
-      darwinModules = import ./module.nix;
+      darwinModules.default = import ./module.nix;
     };
 }
