@@ -2,5 +2,6 @@
 {
   workspaceStateFile = ./workspace-state.json;
   hashes = {
+    "swift-argument-parser" = "0wjpv91cjfg9jwarhn0ak6i2h7ijwv0l4k4n0pdd3rbg3sqv1107";
   };
 }

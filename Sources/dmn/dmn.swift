@@ -1,4 +1,5 @@
 import Cocoa
+import ArgumentParser
 
 struct Command: Codable {
     let executable: String
@@ -23,14 +24,25 @@ func shell(_ exec: String, args: [String]) -> Int32 {
 }
 
 @main
-public struct dmn {
-    public static func callback() throws {
-        let dir = ProcessInfo.processInfo.environment["XDG_CONFIG_DIR", default: "~/.config"]
-        print("[callback] Reading from \(dir)")
-        let url = URL(fileURLWithPath: dir.replacingOccurrences(of: "~", with: FileManager.default.homeDirectoryForCurrentUser.absoluteString)).appendingPathComponent("dmn").appendingPathComponent("commands.json")
-        let data = try Data(contentsOf: url)
-        print("[callback] Read contents of \(url)")
-        let commands: [Command] = try JSONDecoder().decode([Command].self, from: data)
+public struct dmn: ParsableCommand {
+    public init() {}
+
+    private var commandsFiles: [URL] = []
+
+    public func callback() {
+        let commands = commandsFiles.flatMap { path in
+            do {
+                print("[callback] Reading from \(path.absoluteString)")
+                let data = try Data(contentsOf: path)
+                print("[callback] Read contents of \(path.absoluteString)")
+                let commands: [Command] = try JSONDecoder().decode([Command].self, from: data)
+                print("[callback] Decoded \(commands.count) command(s) from \(path.absoluteString)")
+                return commands
+            } catch {
+                print("[callback] Error while reading/decoding \(path.absoluteString); skipping")
+                return []
+            }
+        }
         print("[callback] Decoded \(commands.count) command(s) to run")
 
         let isDark = UserDefaults.standard.string(forKey: "AppleInterfaceStyle") == "Dark"
@@ -42,30 +54,45 @@ public struct dmn {
     }
 
     private static var observation: NSKeyValueObservation?
-    public static func main() {
-        try! callback()
-
+    private mutating func registerCallbacks() {
         if #available(macOS 10.14, *) {
             print("Registering appearance change callback")
-            observation = NSApplication.shared.observe(\.effectiveAppearance) { (app, _) in
-                try! callback()
+            Self.observation = NSApplication.shared.observe(\.effectiveAppearance) { [self] (app, _) in
+                callback()
             }
         } else {
             print("Registering legacy theme change callback")
             DistributedNotificationCenter.default.addObserver(
                     forName: Notification.Name("AppleInterfaceThemeChangedNotification"),
                     object: nil,
-                    queue: nil) { (notification) in
-                try! callback()
+                    queue: nil) { [self] (notification) in
+                callback()
             }
         }
         print("Registering wake callback")
         NSWorkspace.shared.notificationCenter.addObserver(
                 forName: NSWorkspace.didWakeNotification,
                 object: nil,
-                queue: nil) { (notification) in
-            try! callback()
+                queue: nil) { [self] (notification) in
+            callback()
         }
+    }
+
+    @Option var extraCommandsFile: [String] = []
+    @Flag var ignoreUserCommandsFile: Bool = false
+
+    public mutating func run() throws {
+        commandsFiles = extraCommandsFile.map(URL.init(fileURLWithPath:))
+        if !ignoreUserCommandsFile {
+            let dir = ProcessInfo.processInfo.environment["XDG_CONFIG_DIR", default: "~/.config"]
+            let url = URL(fileURLWithPath: dir.replacingOccurrences(of: "~", with: FileManager.default.homeDirectoryForCurrentUser.absoluteString)).appendingPathComponent("dmn").appendingPathComponent("commands.json")
+            commandsFiles.append(url)
+        }
+        print("[setup] Detected \(commandsFiles.count) file(s):")
+        print(commandsFiles.map { "- " + $0.absoluteString }.joined(separator: "\n"))
+
+        callback()
+        registerCallbacks()
         NSApplication.shared.run()
     }
 }
