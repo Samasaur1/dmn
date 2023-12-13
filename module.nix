@@ -3,13 +3,44 @@
 with lib;
 
 let
-  cfg = config.dmn;
+  cfg = config.services.dmn;
 in
 
 {
   options.services.dmn = {
     enable = mkEnableOption "dmn";
+    commands = mkOption {
+      type = with types; listOf (submodule {
+        options = {
+          executable = mkOption {
+            type = str;
+          };
+          arguments = mkOption {
+            type = listOf str;
+          };
+        };
+      });
+      default = [];
+    };
+    ignoreUserCommandsFile = mkOption {
+      type = types.bool;
+      default = true;
+    };
   };
-  config = {
+  config = mkIf cfg.enable {
+    launchd.agents.dmn.serviceConfig = {
+      Label = "com.gauck.sam.dmn";
+      KeepAlive = true;
+      ProgramArguments =
+        let
+          file = pkgs.writeText "dmn-commands.json" (builtins.toJSON cfg.commands);
+          package = pkgs.callPackage ./. {};
+        in
+        [
+          "${package}/bin/dmn"
+          "--extra-commands-file"
+          "${file}"
+        ] ++ lib.optionals cfg.ignoreUserCommandsFile [ "--ignore-user-commands-file" ];
+    };
   };
 }
