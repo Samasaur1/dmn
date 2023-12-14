@@ -61,6 +61,8 @@ public struct dmn: ParsableCommand {
             print("[callback] Running command `\(command.executable)` with argument(s) '\(command.arguments.joined(separator: "', '"))'")
             shell(command.executable, args: command.arguments.map { $0.replacingOccurrences(of: "{}", with: isDark ? "dark" : "light")})
         }
+        fflush(stdout)
+        fflush(stderr)
     }
 
     private static var observation: NSKeyValueObservation?
