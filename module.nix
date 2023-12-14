@@ -41,6 +41,15 @@ in
           "--extra-commands-file"
           "${file}"
         ] ++ lib.optionals cfg.ignoreUserCommandsFile [ "--ignore-user-commands-file" ];
+      # Theoretically you can view logs directly with
+      # `sudo launchctl debug <service> --stdout --stderr`
+      # As is typical for launchd, this has never worked for me,
+      # so possibly include an option to enable log files in the future?
+      # Or just expect people to set
+      # `launchd.agents.dmn.serviceConfig.StandardOutPath = "/tmp/out";`
+      # on their own.
+      # StandardOutPath = "/tmp/nix-dmn-stdout.log";
+      # StandardErrorPath = "/tmp/nix-dmn-stderr.log";
     };
   };
 }
