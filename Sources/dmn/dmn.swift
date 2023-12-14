@@ -7,9 +7,8 @@ struct Command: Codable {
 }
 
 @discardableResult
-func shell(_ exec: String, args: [String]) -> Int32 {
+func shell(_ exec: String, args: [String], mode isDark: Bool) -> Int32 {
     let task = Process()
-    let isDark = UserDefaults.standard.string(forKey: "AppleInterfaceStyle") == "Dark"
     var env = ProcessInfo.processInfo.environment
     env["DARKMODE"] = isDark ? "1" : "0"
     env["MODE"] = isDark ? "dark" : "light"
@@ -59,7 +58,7 @@ public struct dmn: ParsableCommand {
 
         for command in commands {
             print("[callback] Running command `\(command.executable)` with argument(s) '\(command.arguments.joined(separator: "', '"))'")
-            shell(command.executable, args: command.arguments.map { $0.replacingOccurrences(of: "{}", with: isDark ? "dark" : "light")})
+            shell(command.executable, args: command.arguments.map { $0.replacingOccurrences(of: "{}", with: isDark ? "dark" : "light")}, mode: isDark)
         }
         fflush(stdout)
         fflush(stderr)
