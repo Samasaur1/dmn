@@ -45,12 +45,24 @@ public struct dmn: ParsableCommand {
         }
         print("[callback] Decoded \(commands.count) command(s) to run")
 
-        let isDark = UserDefaults.standard.string(forKey: "AppleInterfaceStyle") == "Dark"
+        let isDark: Bool
+        if #available(macOS 10.14, *) {
+            if #available(macOS 11, *) {
+                isDark = NSAppearance.currentDrawing().bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+            } else {
+                isDark = NSAppearance.current.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+            }
+        } else {
+            isDark = UserDefaults.standard.string(forKey: "AppleInterfaceStyle") == "Dark"
+        }
+        print("[callback] isDark: \(isDark)")
 
         for command in commands {
             print("[callback] Running command `\(command.executable)` with argument(s) '\(command.arguments.joined(separator: "', '"))'")
             shell(command.executable, args: command.arguments.map { $0.replacingOccurrences(of: "{}", with: isDark ? "dark" : "light")})
         }
+        fflush(stdout)
+        fflush(stderr)
     }
 
     private static var observation: NSKeyValueObservation?
