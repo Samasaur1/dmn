@@ -43,7 +43,7 @@ in
         # As is typical for launchd, this has never worked for me,
         # so possibly include an option to enable log files in the future?
         # Or just expect people to set
-        # `launchd.user.agents.dmn.serviceConfig.StandardOutPath = "/tmp/out";`
+        # `launchd.agents.dmn.config.StandardOutPath = "/tmp/out";`
         # on their own.
         # StandardOutPath = "/tmp/nix-dmn-stdout.log";
         # StandardErrorPath = "/tmp/nix-dmn-stderr.log";
