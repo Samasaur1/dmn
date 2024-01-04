@@ -20,27 +20,22 @@ in
           };
         };
       });
-      default = [];
-    };
-    ignoreUserCommandsFile = mkOption {
-      type = types.bool;
-      default = true;
     };
   };
   config = mkIf cfg.enable {
-    launchd.user.agents.dmn.serviceConfig = {
+    assertions = [
+      (hm.assertions.assertPlatform "targets.darwin.defaults" pkgs platforms.darwin)
+    ];
+    launchd.agents.dmn.config = {
       Label = "com.gauck.sam.dmn";
       KeepAlive = true;
       ProgramArguments =
         let
-          file = pkgs.writeText "dmn-commands.json" (builtins.toJSON cfg.commands);
           package = pkgs.callPackage ./. {};
         in
         [
           "${package}/bin/dmn"
-          "--extra-commands-file"
-          "${file}"
-        ] ++ lib.optionals cfg.ignoreUserCommandsFile [ "--ignore-user-commands-file" ];
+        ];
       # Theoretically you can view logs directly with
       # `sudo launchctl debug <service> --stdout --stderr`
       # As is typical for launchd, this has never worked for me,
@@ -51,5 +46,6 @@ in
       # StandardOutPath = "/tmp/nix-dmn-stdout.log";
       # StandardErrorPath = "/tmp/nix-dmn-stderr.log";
     };
+    xdg.configFile."dmn/commands.json".text = (builtins.toJSON cfg.commands);
   };
 }
