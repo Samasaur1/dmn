@@ -1,11 +1,12 @@
-{ lib, stdenv, swift, swiftpm, swiftpm2nix, darwin, ... }:
+{ lib, stdenv, swift, swiftpm, swiftpm2nix, darwin, overrideSDK, swiftPackages, ... }:
 
 let
   # Pass the generated files to the helper.
   generated = swiftpm2nix.helpers ./nix;
+  stdenv' = overrideSDK swiftPackages.stdenv "11.0";
 in
 
-stdenv.mkDerivation {
+stdenv'.mkDerivation {
   pname = "dmn";
   version = "1.1.0";
 
