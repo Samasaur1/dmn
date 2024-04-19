@@ -1,5 +1,5 @@
 {
-  description = "A Discord bot that watches RSS feeds";
+  description = "Run arbitrary commands on system theme changes.";
 
   outputs = { nixpkgs, ... }:
     let
