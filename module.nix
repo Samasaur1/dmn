@@ -36,7 +36,9 @@ in
             package = pkgs.callPackage ./. {};
           in
           [
-            "${package}/bin/dmn"
+            "/bin/sh"
+            "-c"
+            "/bin/wait4path /nix/store &amp;&amp; exec ${package}/bin/dmn"
           ];
         # Theoretically you can view logs directly with
         # `sudo launchctl debug <service> --stdout --stderr`
