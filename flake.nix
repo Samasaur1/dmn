@@ -1,6 +1,8 @@
 {
   description = "Run arbitrary commands on system theme changes.";
 
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs";
+
   outputs = { nixpkgs, ... }:
     let
       forAllSystems = gen:
