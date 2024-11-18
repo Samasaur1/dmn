@@ -1,11 +1,11 @@
-{ lib, stdenv, swift, swiftpm, swiftpm2nix, ... }:
+{ lib, swiftPackages, swift, swiftpm, swiftpm2nix, ... }:
 
 let
   # Pass the generated files to the helper.
   generated = swiftpm2nix.helpers ./nix;
 in
 
-stdenv.mkDerivation {
+swiftPackages.stdenv.mkDerivation {
   pname = "dmn";
   version = "1.2.0";
 
