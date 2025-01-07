@@ -1,5 +1,6 @@
-import Cocoa
 import ArgumentParser
+import Cocoa
+import IsDark
 
 struct Command: Codable {
     let executable: String
@@ -44,16 +45,7 @@ public struct dmn: ParsableCommand {
         }
         print("[callback] Decoded \(commands.count) command(s) to run")
 
-        let isDark: Bool
-        if #available(macOS 10.14, *) {
-            if #available(macOS 11, *) {
-                isDark = NSAppearance.currentDrawing().bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
-            } else {
-                isDark = NSAppearance.current.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
-            }
-        } else {
-            isDark = UserDefaults.standard.string(forKey: "AppleInterfaceStyle") == "Dark"
-        }
+        let isDark = isDark()
         print("[callback] isDark: \(isDark)")
 
         for command in commands {
